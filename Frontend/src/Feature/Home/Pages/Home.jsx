@@ -12,8 +12,7 @@ const getBg = (genre = "") => {
     return "linear-gradient(135deg,#134e5e,#71b280)";
   if (genre.includes("Sci-Fi"))
     return "linear-gradient(135deg,#000428,#004e92)";
-  if (genre.includes("Crime"))
-    return "linear-gradient(135deg,#232526,#414345)";
+  if (genre.includes("Crime")) return "linear-gradient(135deg,#232526,#414345)";
   return "linear-gradient(135deg,#141e30,#243b55)";
 };
 
@@ -40,9 +39,9 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [activeGenre, setActiveGenre] = useState("All");
   const timerRef = useRef(null);
-  const { movies, loading, handleAllMovies } = useMovie();
+  const { movies, loading, watchlater, handleAllMovies, handleGetmovie } = useMovie();
 
-  const {user,handlegetme,handlelogout} = useAuth();
+  const { user, handlegetme, handlelogout } = useAuth();
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -51,11 +50,17 @@ export default function HomePage() {
     fetchMovies();
   }, []);
 
+  const handleMoviePrint = async(movieId)=>{
+    await handleGetmovie(movieId);
+    console.log(watchLater);
+  }
+
+
   const startTimer = () => {
     clearInterval(timerRef.current);
     timerRef.current = setInterval(
       () => setSlide((s) => (s + 1) % movies.length),
-      5500
+      5500,
     );
   };
 
@@ -73,7 +78,7 @@ export default function HomePage() {
     setWatchLater((prev) =>
       prev.find((m) => m.imdbID === movie.imdbID)
         ? prev.filter((m) => m.imdbID !== movie.imdbID)
-        : [...prev, movie]
+        : [...prev, movie],
     );
 
   const inWL = (id) => watchLater.some((m) => m.imdbID === id);
@@ -81,9 +86,7 @@ export default function HomePage() {
   const allGenres = [
     "All",
     ...Array.from(
-      new Set(
-        movies.flatMap((m) => m.Genre.split(", ").map((g) => g.trim()))
-      )
+      new Set(movies.flatMap((m) => m.Genre.split(", ").map((g) => g.trim()))),
     ),
   ];
 
@@ -97,25 +100,32 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: "100vh",
-        background: "#090a0f",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-        gap: 16,
-        fontFamily: "'Inter', sans-serif",
-      }}>
-        <div style={{
-          width: 40, height: 40,
-          border: "3px solid rgba(255,255,255,0.1)",
-          borderTop: "3px solid #fff",
-          borderRadius: "50%",
-          animation: "spin 0.8s linear infinite",
-        }} />
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#090a0f",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 16,
+          fontFamily: "'Inter', sans-serif",
+        }}
+      >
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            border: "3px solid rgba(255,255,255,0.1)",
+            borderTop: "3px solid #fff",
+            borderRadius: "50%",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13 }}>Loading movies...</p>
+        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
+          Loading movies...
+        </p>
       </div>
     );
   }
@@ -312,7 +322,10 @@ export default function HomePage() {
                       >
                         🕐 Watch Later{" "}
                         {watchLater.length > 0 && (
-                          <span className="wl-count" style={{ marginLeft: "auto" }}>
+                          <span
+                            className="wl-count"
+                            style={{ marginLeft: "auto" }}
+                          >
                             {watchLater.length}
                           </span>
                         )}
@@ -320,7 +333,7 @@ export default function HomePage() {
                       <div className="pcard-div" />
                       <button
                         className="pcard-item danger"
-                        onClick={()=>handlelogout()}
+                        onClick={() => handlelogout()}
                       >
                         🚪 Log Out
                       </button>
@@ -343,68 +356,81 @@ export default function HomePage() {
           <img
             src={cur.Poster}
             alt={cur.Title}
-            onError={(e) => { e.target.style.display = "none"; }}
+            onError={(e) => {
+              e.target.style.display = "none";
+            }}
           />
         </div>
 
         {/* Content overlay — full width gradient, text centered inside */}
         <div className="hero-content">
           <div className="hero-inner">
-              <span className="hero-rated">{cur.Rated}</span>
-              <div className="hero-title syne">{cur.Title}</div>
-              <div className="hero-meta">
-                <span><span className="star-gold">★</span> {cur.imdbRating}</span>
-                <span>{cur.Year}</span>
-                <span>{cur.Runtime}</span>
-                <span>{cur.Genre?.split(",")[0] || ""}</span>
-              </div>
-              <div className="ratings-row">
-                {cur.Ratings?.map((r, i) => (
-                  <span
-                    key={i}
-                    className={`rchip ${["rchip-imdb", "rchip-rt", "rchip-meta"][i]}`}
-                  >
-                    {r.Value}
-                  </span>
-                ))}
-              </div>
-              <div className="hero-plot">{cur.Plot}</div>
-              <div className="hero-actors">🎬 {cur.Actors}</div>
-              <div className="hero-actions">
-                <button className="btn-primary">▶ Watch Now</button>
-                <button
-                  className={`btn-wl ${inWL(cur.imdbID) ? "saved" : ""}`}
-                  onClick={() => toggleWL(cur)}
+            <span className="hero-rated">{cur.Rated}</span>
+            <div className="hero-title syne">{cur.Title}</div>
+            <div className="hero-meta">
+              <span>
+                <span className="star-gold">★</span> {cur.imdbRating}
+              </span>
+              <span>{cur.Year}</span>
+              <span>{cur.Runtime}</span>
+              <span>{cur.Genre?.split(",")[0] || ""}</span>
+            </div>
+            <div className="ratings-row">
+              {cur.Ratings?.map((r, i) => (
+                <span
+                  key={i}
+                  className={`rchip ${["rchip-imdb", "rchip-rt", "rchip-meta"][i]}`}
                 >
-                  {inWL(cur.imdbID) ? "🔖 Saved" : "+ Watch Later"}
-                </button>
-              </div>
-              <div className="hero-dots">
-                {movies.slice(0, 8).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`hero-dot ${i === slide ? "active" : ""}`}
-                    onClick={() => goSlide(i)}
-                  />
-                ))}
-              </div>
+                  {r.Value}
+                </span>
+              ))}
+            </div>
+            <div className="hero-plot">{cur.Plot}</div>
+            <div className="hero-actors">🎬 {cur.Actors}</div>
+            <div className="hero-actions">
+              <button className="btn-primary">▶ Watch Now</button>
+              <button
+                className={`btn-wl ${inWL(cur.imdbID) ? "saved" : ""}`}
+                onClick={() => toggleWL(cur)}
+              >
+                {inWL(cur.imdbID) ? "🔖 Saved" : "+ Watch Later"}
+              </button>
+            </div>
+            <div className="hero-dots">
+              {movies.slice(0, 8).map((_, i) => (
+                <div
+                  key={i}
+                  className={`hero-dot ${i === slide ? "active" : ""}`}
+                  onClick={() => goSlide(i)}
+                />
+              ))}
             </div>
           </div>
+        </div>
       </div>
       {/* WATCH LATER DRAWER */}
       {watchLaterOpen && (
         <>
-          <div className="drawer-overlay" onClick={() => setWatchLaterOpen(false)} />
+          <div
+            className="drawer-overlay"
+            onClick={() => setWatchLaterOpen(false)}
+          />
           <div className="drawer">
             <div className="drawer-head">
               <div className="drawer-title">Watch Later</div>
-              <button className="d-close" onClick={() => setWatchLaterOpen(false)}>✕</button>
+              <button
+                className="d-close"
+                onClick={() => setWatchLaterOpen(false)}
+              >
+                ✕
+              </button>
             </div>
             <div className="drawer-body">
               {watchLater.length === 0 ? (
                 <div className="d-empty">
                   <span className="d-empty-icon">🎬</span>
-                  Nothing saved yet.<br />
+                  Nothing saved yet.
+                  <br />
                   Hit + Watch Later on any movie.
                 </div>
               ) : (
@@ -419,7 +445,9 @@ export default function HomePage() {
                         {m.Year} · {m.Genre?.split(",")[0]}
                       </div>
                     </div>
-                    <button className="d-rm" onClick={() => toggleWL(m)}>✕</button>
+                    <button className="d-rm" onClick={() => toggleWL(m)}>
+                      ✕
+                    </button>
                   </div>
                 ))
               )}
@@ -460,12 +488,14 @@ export default function HomePage() {
                     <img
                       src={movie.Poster}
                       alt={movie.Title}
-                      onError={(e) => { e.target.src = ""; }}
+                      onError={(e) => {
+                        e.target.src = "";
+                      }}
                     />
                     <div className="img-overlay" />
                     <button
                       className={`wl-tog ${saved ? "on" : "off"}`}
-                      onClick={() => toggleWL(movie)}
+                      onClick={() => {toggleWL(movie),handleMoviePrint(movie._id)}}
                     >
                       {saved ? "🔖" : "+"}
                     </button>

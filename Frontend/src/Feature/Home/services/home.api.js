@@ -7,7 +7,22 @@ const api = axios.create({
 
 export async function all_movies() {
   const response = await api.get("/api/movies/all-movies");
-//   console.log(response.data.movies);
-  
+
   return response.data.movies;
+}
+
+export async function addWatchLater(title, PosterUrl, genre, year) {
+  const response = await api.post("/api/movies/watch-later", {
+    title,
+    PosterUrl,
+    genre,
+    year,
+  });
+
+  return response.data.movie;
+}
+
+export async function getmovieData(movieId) {
+  const response = await api.get(`/api/movies/get-movie/${movieId}`);
+  return response.data.movie;
 }
