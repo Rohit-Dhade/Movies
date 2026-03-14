@@ -38,9 +38,9 @@ export const getAllMovies = async (req, res) => {
 };
 
 export const addWatchlaterMovie = async (req, res) => {
-  const { title, PosterUrl, year, genre } = req.body;
+  const { userId, title, PosterUrl, year, genre } = req.body;
   try {
-    if (!title || !PosterUrl || !year || !genre) {
+    if (!userId || !title || !PosterUrl || !year || !genre) {
       return res.status(400).json({
         message: "All fields are required",
       });
@@ -55,6 +55,7 @@ export const addWatchlaterMovie = async (req, res) => {
     }
 
     const movie = await watchlaterModel.create({
+      userId,
       title,
       PosterUrl,
       year,
@@ -94,4 +95,21 @@ export const getmovie = async (req, res) => {
       error: err.message,
     });
   }
+};
+
+export const GetWatchLaterMovies = async (req, res) => {
+  const userId = req.user.id;
+
+  const movies = await watchlaterModel.find({userId});
+
+  if (!movies) {
+    return res.status(400).json({
+      message: "No Movies found in watch later section",
+    });
+  }
+
+  res.status(200).json({
+    message: "Movies Fetched",
+    movies: movies,
+  });
 };
