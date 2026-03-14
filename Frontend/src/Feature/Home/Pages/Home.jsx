@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMovie } from "../hook/useMovie";
 import { useAuth } from "../../auth/hook/useAuth";
+import { addWatchLater } from "../services/home.api";
 
 const getBg = (genre = "") => {
   if (genre.includes("Action"))
@@ -39,7 +40,7 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [activeGenre, setActiveGenre] = useState("All");
   const timerRef = useRef(null);
-  const { movies, loading, watchlater, handleAllMovies, handleGetmovie } = useMovie();
+  const { movies, loading, watchlater, handleAllMovies, handleWatchLater } = useMovie();
 
   const { user, handlegetme, handlelogout } = useAuth();
 
@@ -50,11 +51,9 @@ export default function HomePage() {
     fetchMovies();
   }, []);
 
-  const handleMoviePrint = async(movieId)=>{
-    await handleGetmovie(movieId);
-    console.log(watchLater);
-  }
-
+  const handleAddWatchLater = async (userId, title, PosterUrl, year, genre) => {
+    await handleWatchLater(userId, title, PosterUrl, year, genre);
+  };
 
   const startTimer = () => {
     clearInterval(timerRef.current);
@@ -86,7 +85,7 @@ export default function HomePage() {
   const allGenres = [
     "All",
     ...Array.from(
-      new Set(movies.flatMap((m) => m.Genre.split(", ").map((g) => g.trim()))),
+      new Set(movies?.flatMap((m) => m.Genre.split(", ").map((g) => g.trim()))),
     ),
   ];
 
@@ -288,8 +287,8 @@ export default function HomePage() {
           <div className="nav-right">
             <button className="wl-btn" onClick={() => setWatchLaterOpen(true)}>
               🕐 Watch Later
-              {watchLater.length > 0 && (
-                <span className="wl-count">{watchLater.length}</span>
+              {watchlater.length > 0 && (
+                <span className="wl-count">{watchlater.length}</span>
               )}
             </button>
             <div style={{ position: "relative" }}>
@@ -321,12 +320,12 @@ export default function HomePage() {
                         }}
                       >
                         🕐 Watch Later{" "}
-                        {watchLater.length > 0 && (
+                        {watchlater.length > 0 && (
                           <span
                             className="wl-count"
                             style={{ marginLeft: "auto" }}
                           >
-                            {watchLater.length}
+                            {watchlater.length}
                           </span>
                         )}
                       </button>
@@ -426,7 +425,7 @@ export default function HomePage() {
               </button>
             </div>
             <div className="drawer-body">
-              {watchLater.length === 0 ? (
+              {watchlater.length === 0 ? (
                 <div className="d-empty">
                   <span className="d-empty-icon">🎬</span>
                   Nothing saved yet.
@@ -434,20 +433,21 @@ export default function HomePage() {
                   Hit + Watch Later on any movie.
                 </div>
               ) : (
-                watchLater.map((m) => (
-                  <div className="d-movie" key={m.imdbID}>
+                watchlater.map((m) => (
+                  <div className="d-movie" key={m.title}>
                     <div className="d-thumb">
-                      <img src={m.Poster} alt={m.Title} />
+                      <img src={m.PosterUrl} alt={m.title} />
                     </div>
                     <div className="d-info">
-                      <div className="d-title">{m.Title}</div>
+                      <div className="d-title">{m.title}</div>
                       <div className="d-meta">
-                        {m.Year} · {m.Genre?.split(",")[0]}
+                        {m.year} · {m.genre?.split(",")[0]}
                       </div>
                     </div>
-                    <button className="d-rm" onClick={() => toggleWL(m)}>
-                      ✕
-                    </button>
+                    <button
+                      className="d-rm"
+                      onClick={() => toggleWL(m)}
+                    ></button>
                   </div>
                 ))
               )}
@@ -495,7 +495,16 @@ export default function HomePage() {
                     <div className="img-overlay" />
                     <button
                       className={`wl-tog ${saved ? "on" : "off"}`}
-                      onClick={() => {toggleWL(movie),handleMoviePrint(movie._id)}}
+                      onClick={() => {
+                        (toggleWL(movie),
+                          handleAddWatchLater(
+                            user.Id,
+                            movie.Title,
+                            movie.Poster,
+                            movie.Year,
+                            movie.Genre,
+                          ));
+                      }}
                     >
                       {saved ? "🔖" : "+"}
                     </button>

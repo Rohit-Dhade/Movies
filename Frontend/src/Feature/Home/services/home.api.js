@@ -11,12 +11,13 @@ export async function all_movies() {
   return response.data.movies;
 }
 
-export async function addWatchLater(title, PosterUrl, genre, year) {
+export async function addWatchLater(userId, title, PosterUrl, year, genre) {
   const response = await api.post("/api/movies/watch-later", {
+    userId,
     title,
     PosterUrl,
-    genre,
     year,
+    genre
   });
 
   return response.data.movie;
@@ -25,4 +26,10 @@ export async function addWatchLater(title, PosterUrl, genre, year) {
 export async function getmovieData(movieId) {
   const response = await api.get(`/api/movies/get-movie/${movieId}`);
   return response.data.movie;
+}
+
+
+export async function GetWatchLaterMovie(movieId) {
+  const response = await api.get("/api/movies/get-watch-later-movie");
+  return response.data.movies;
 }

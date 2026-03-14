@@ -1,12 +1,13 @@
 import { useContext, useEffect } from "react";
-import { all_movies, getmovieData } from "../services/home.api";
+import { all_movies, getmovieData, addWatchLater } from "../services/home.api";
 
 import { MovieContext } from "../movie.context";
 
 export const useMovie = () => {
   const context = useContext(MovieContext);
 
-  const { movies, setmovies, loading, setLoading, watchlater, setwatchlater } = context;
+  const { movies, setmovies, loading, setLoading, watchlater, setwatchlater } =
+    context;
 
   async function handleAllMovies() {
     setLoading(true);
@@ -15,9 +16,16 @@ export const useMovie = () => {
     setLoading(false);
   }
 
-  async function handleGetmovie(movieId) {
+  // async function handleGetmovie(movieId) {
+  //   setLoading(true);
+  //   const data = await getmovieData(movieId);
+  //   setwatchlater((prev) => [...prev, data]);
+  //   setLoading(false);
+  // }
+
+  async function handleWatchLater(userId, title, PosterUrl, year, genre) {
     setLoading(true);
-    const data = await getmovieData(movieId);
+    const data = await addWatchLater(userId, title, PosterUrl, year, genre);
     setwatchlater((prev) => [...prev, data]);
     setLoading(false);
   }
@@ -27,6 +35,6 @@ export const useMovie = () => {
     loading,
     watchlater,
     handleAllMovies,
-    handleGetmovie
+    handleWatchLater,
   };
 };

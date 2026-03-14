@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 import { createContext, useState } from "react";
-import { all_movies, addWatchLater } from "./services/home.api";
+import {
+  all_movies,
+  addWatchLater,
+  GetWatchLaterMovie,
+} from "./services/home.api";
 
 export const MovieContext = createContext();
 
@@ -13,6 +17,8 @@ export const MovieContextProvider = ({ children }) => {
     const getMovies = async () => {
       try {
         const data = await all_movies();
+        const data1 = await GetWatchLaterMovie();
+        setwatchlater(data1);
         setmovies(data);
       } catch {
         setmovies(null);
@@ -22,6 +28,20 @@ export const MovieContextProvider = ({ children }) => {
     };
     getMovies();
   }, []);
+
+   useEffect(() => {
+    const getMovies = async () => {
+      try {
+        const data1 = await GetWatchLaterMovie();
+        setwatchlater(data1);
+      } catch {
+        setwatchlater(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getMovies();
+  }, [watchlater]);
 
   return (
     <MovieContext.Provider
