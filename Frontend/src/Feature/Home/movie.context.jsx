@@ -41,7 +41,7 @@ export const MovieContextProvider = ({ children }) => {
       }
     };
     getMovies();
-  }, [watchlater]);
+  }, []);
 
   return (
     <MovieContext.Provider

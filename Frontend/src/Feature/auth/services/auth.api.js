@@ -6,22 +6,62 @@ const api = axios.create({
 });
 
 export async function login(email, password) {
-  const response = await api.post("/api/auth/login", {
-    email,
-    password,
-  });
+  try {
+    const response = await api.post("/api/auth/login", {
+      email,
+      password,
+    });
 
-  return response.data.user;
+    return {
+      success: true,
+      data: response.data,
+      message: null,
+    };
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      return {
+        success: false,
+        data: null,
+        message: error.response.data.message,
+      };
+    }
+
+    return {
+      success: false,
+      data: null,
+      message: "Something went wrong",
+    };
+  }
 }
 
 export async function register(username, email, password) {
-  const response = await api.post("/api/auth/register", {
-    username,
-    email,
-    password,
-  });
+  try {
+    const response = await api.post("/api/auth/register", {
+      username,
+      email,
+      password,
+    });
 
-  return response.data.user;
+    return {
+      success: true,
+      data: response.data,
+      message: null,
+    };
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      return {
+        success: false,
+        data: null,
+        message: error.response.data.message,
+      };
+    }
+
+    return {
+      success: false,
+      data: null,
+      message: "Something went wrong",
+    };
+  }
 }
 
 export async function getme() {

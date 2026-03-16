@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMovie } from "../hook/useMovie";
 import { useAuth } from "../../auth/hook/useAuth";
-import { addWatchLater } from "../services/home.api";
+import { RemoveWatchMovieLater } from "../services/home.api";
 
 const getBg = (genre = "") => {
   if (genre.includes("Action"))
@@ -40,7 +40,16 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [activeGenre, setActiveGenre] = useState("All");
   const timerRef = useRef(null);
-  const { movies, loading, watchlater, handleAllMovies, handleWatchLater } = useMovie();
+  const {
+    movies,
+    loading,
+    watchlater,
+    selected,
+    handleAllMovies,
+    handleWatchLater,
+    handleRemoveWatchLater,
+    handleGetmovie
+  } = useMovie();
 
   const { user, handlegetme, handlelogout } = useAuth();
 
@@ -51,8 +60,22 @@ export default function HomePage() {
     fetchMovies();
   }, []);
 
-  const handleAddWatchLater = async (userId, title, PosterUrl, year, genre) => {
+  const handleAddWatchLater = async (
+    e,
+    userId,
+    title,
+    PosterUrl,
+    year,
+    genre,
+  ) => {
+    e.preventDefault();
     await handleWatchLater(userId, title, PosterUrl, year, genre);
+  };
+
+  const handleRemovefromWatchLater = async (e, userId, movieTitle) => {
+    e.preventDefault();
+    // await RemoveWatchMovieLater(userId, movieTitle);
+    await handleRemoveWatchLater(userId, movieTitle);
   };
 
   const startTimer = () => {
@@ -387,10 +410,20 @@ export default function HomePage() {
             <div className="hero-plot">{cur.Plot}</div>
             <div className="hero-actors">🎬 {cur.Actors}</div>
             <div className="hero-actions">
-              <button className="btn-primary">▶ Watch Now</button>
+              <button className="btn-primary">▶ Watch Trailer Now</button>
               <button
                 className={`btn-wl ${inWL(cur.imdbID) ? "saved" : ""}`}
-                onClick={() => toggleWL(cur)}
+                onClick={(e) => {
+                  (toggleWL(cur),
+                    handleAddWatchLater(
+                      e,
+                      user.Id,
+                      cur.Title,
+                      cur.Poster,
+                      cur.Year,
+                      cur.Genre,
+                    ));
+                }}
               >
                 {inWL(cur.imdbID) ? "🔖 Saved" : "+ Watch Later"}
               </button>
@@ -446,7 +479,18 @@ export default function HomePage() {
                     </div>
                     <button
                       className="d-rm"
-                      onClick={() => toggleWL(m)}
+                      onClick={(e) => {
+                        (toggleWL(m),
+                          handleRemovefromWatchLater(
+                            e,
+                            user.Id,
+                            m.title,
+                            m.title,
+                            m.PosterUrl,
+                            m.year,
+                            m.genre,
+                          ));
+                      }}
                     ></button>
                   </div>
                 ))
@@ -483,7 +527,7 @@ export default function HomePage() {
               const color = gc(movie.Genre);
               const saved = inWL(movie.imdbID);
               return (
-                <div className="mcard" key={movie.imdbID}>
+                <div onClick={()=>{handleGetmovie(movie._id),navigate(`/movieDetails/${movie._id}`)}} className="mcard" key={movie.imdbID}>
                   <div className="mcard-img-wrap">
                     <img
                       src={movie.Poster}
@@ -495,9 +539,10 @@ export default function HomePage() {
                     <div className="img-overlay" />
                     <button
                       className={`wl-tog ${saved ? "on" : "off"}`}
-                      onClick={() => {
+                      onClick={(e) => {
                         (toggleWL(movie),
                           handleAddWatchLater(
+                            e,
                             user.Id,
                             movie.Title,
                             movie.Poster,

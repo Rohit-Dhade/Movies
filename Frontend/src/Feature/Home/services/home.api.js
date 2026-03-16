@@ -17,7 +17,7 @@ export async function addWatchLater(userId, title, PosterUrl, year, genre) {
     title,
     PosterUrl,
     year,
-    genre
+    genre,
   });
 
   return response.data.movie;
@@ -28,8 +28,16 @@ export async function getmovieData(movieId) {
   return response.data.movie;
 }
 
-
 export async function GetWatchLaterMovie(movieId) {
   const response = await api.get("/api/movies/get-watch-later-movie");
   return response.data.movies;
+}
+
+export async function RemoveWatchMovieLater(userId, movieTitle) {
+  const response = await api.delete("/api/movies/remove-movie", {
+    data: {
+      userId,
+      movieTitle
+    },
+  });
 }

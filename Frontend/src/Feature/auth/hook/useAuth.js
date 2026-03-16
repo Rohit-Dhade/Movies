@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { register, login, getme, logout } from "../services/auth.api";
 
 import { AuthContext } from "../auth.context";
@@ -6,6 +6,7 @@ import { AuthContext } from "../auth.context";
 export const useAuth = () => {
   const context = useContext(AuthContext);
   const { loading, setLoading, user, setuser } = context;
+  const [error, setError] = useState(null);
 
   async function handleRegister(username, email, password) {
     setLoading(true);
@@ -15,10 +16,23 @@ export const useAuth = () => {
   }
 
   async function handleLogin(username, email, password) {
-    setLoading(true);
-    const data = await login(username, email, password);
-    setuser(data);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const data = await login(username, email, password);
+      if (data.success) {
+        setuser(data);
+        setError(null);
+        return true;
+      } else {
+        setError(data.message);
+        return false;
+      }
+    } catch (err) {
+      setError("Login Failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handlegetme() {
@@ -38,6 +52,7 @@ export const useAuth = () => {
   return {
     user,
     loading,
+    error,
     handleRegister,
     handleLogin,
     handlegetme,
