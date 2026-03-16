@@ -100,7 +100,7 @@ export const getmovie = async (req, res) => {
 export const GetWatchLaterMovies = async (req, res) => {
   const userId = req.user.id;
 
-  const movies = await watchlaterModel.find({userId});
+  const movies = await watchlaterModel.find({ userId });
 
   if (!movies) {
     return res.status(400).json({
@@ -111,5 +111,25 @@ export const GetWatchLaterMovies = async (req, res) => {
   res.status(200).json({
     message: "Movies Fetched",
     movies: movies,
+  });
+};
+
+export const deleteMovieFromWatchLater = async (req, res) => {
+  const userId = req.user.id;
+  const { movieTitle } = req.body;
+
+  const resp = await watchlaterModel.deleteOne({
+    userId,
+    title: movieTitle,
+  });
+
+  if (resp.deletedCount === 0) {
+    return res.status(404).json({
+      message: "Movie not found",
+    });
+  }
+
+  res.status(200).json({
+    message: "Movie removed successfully",
   });
 };
